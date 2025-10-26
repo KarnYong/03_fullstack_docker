@@ -7,9 +7,13 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-if (process.env.NODE_ENV !== 'production') {
-  app.use(cors());
-}
+// Enable CORS for production (frontend client-side requests)
+const corsOptions = {
+  origin: process.env.CORS_ORIGIN || '*',
+  credentials: true,
+  optionsSuccessStatus: 200
+};
+app.use(cors(corsOptions));
 
 const pool = mysql.createPool({
   host: process.env.DB_HOST || 'localhost',
