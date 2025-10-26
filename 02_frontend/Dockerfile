@@ -1,53 +1,37 @@
-# ---------- Stage 1: Install dependencies ----------
-FROM node:20-alpine AS deps
-
-# Set working directory inside the container
-WORKDIR /app
-
-# Copy only package.json and package-lock.json first (for better caching)
-COPY package*.json ./
-
-# Install dependencies using clean install (uses package-lock.json for exact versions)
-RUN npm ci
-
-
-# ---------- Stage 2: Build the Next.js application ----------
+# ---------- Stage 1: Build the Next.js application ----------
 FROM node:20-alpine AS builder
 
-# Set working directory
 WORKDIR /app
 
-# Copy dependencies from previous stage
-COPY --from=deps /app/node_modules ./node_modules
+# Copy package files and install dependencies
+COPY package*.json ./
+RUN npm ci && npm cache clean --force
 
-# Copy all source files to the build container
+# Copy source files and build
 COPY . .
-
-# Build the Next.js production app
+ENV NEXT_TELEMETRY_DISABLED=1
 RUN npm run build
 
 
-# ---------- Stage 3: Run the production server ----------
+# ---------- Stage 2: Production runtime ----------
 FROM node:20-alpine AS runner
 
-# Set working directory
 WORKDIR /app
 
-# Set environment variable for production
-ENV NODE_ENV=production
+ENV NODE_ENV=production \
+    NEXT_TELEMETRY_DISABLED=1
 
-# Copy built files from builder stage
-# .next/standalone contains the compiled Next.js server
-COPY --from=builder /app/.next/standalone ./
+# Create non-root user
+RUN addgroup --system --gid 1001 nodejs && \
+    adduser --system --uid 1001 nextjs
 
-# Copy static assets (JS, CSS, images)
-COPY --from=builder /app/.next/static ./.next/static
+# Copy built application
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+COPY --from=builder --chown=nextjs:nodejs /app/public ./public
 
-# Copy the public folder (public images/files)
-COPY --from=builder /app/public ./public
+USER nextjs
 
-# Expose port 3000 for the container
 EXPOSE 3000
 
-# Start the production server
 CMD ["node", "server.js"]

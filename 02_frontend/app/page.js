@@ -1,11 +1,45 @@
-async function getAttractions() {
-  const res = await fetch("http://localhost:3000/api/attractions", { cache: "no-store" });
-  if (!res.ok) throw new Error("Failed to fetch");
-  return res.json();
-}
+"use client";
 
-export default async function Page() {
-  const rows = await getAttractions();
+import { useState, useEffect } from "react";
+
+export default function Page() {
+  const [rows, setRows] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    async function getAttractions() {
+      try {
+        const apiHost = process.env.NEXT_PUBLIC_API_HOST || "http://localhost:5000";
+        const res = await fetch(`${apiHost}/attractions`, { cache: "no-store" });
+        if (!res.ok) throw new Error("Failed to fetch");
+        const data = await res.json();
+        setRows(data);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    getAttractions();
+  }, []);
+
+  if (loading) {
+    return (
+      <main className="container">
+        <div className="empty">Loading...</div>
+      </main>
+    );
+  }
+
+  if (error) {
+    return (
+      <main className="container">
+        <div className="empty">Error: {error}</div>
+      </main>
+    );
+  }
 
   return (
     <main className="container">
