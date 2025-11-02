@@ -39,7 +39,7 @@ pipeline {
             steps {
                 script {
                     echo "Validating Docker Compose configuration..."
-                    sh 'docker-compose config'
+                    sh 'docker compose config'
                 }
             }
         }
@@ -81,17 +81,17 @@ EOF
                     }
 
                     // Stop existing containers
-                    def downCommand = 'docker-compose down'
+                    def downCommand = 'docker compose down'
                     if (params.CLEAN_VOLUMES) {
                         echo "WARNING: Removing volumes (database will be cleared)"
-                        downCommand = 'docker-compose down -v'
+                        downCommand = 'docker compose down -v'
                     }
                     sh downCommand
 
                     // Build and start services
                     sh """
-                        docker-compose build --no-cache
-                        docker-compose up -d
+                        docker compose build --no-cache
+                        docker compose up -d
                     """
 
                     echo "Deployment completed"
@@ -109,7 +109,7 @@ EOF
 
                     sh """
                         # Check if containers are running
-                        docker-compose ps
+                        docker compose ps
 
                         # Wait for API to be ready (max 60 seconds)
                         timeout 60 bash -c 'until curl -f http://localhost:5000/health; do sleep 2; done' || exit 1
@@ -130,11 +130,11 @@ EOF
 
                     sh """
                         echo "=== Container Status ==="
-                        docker-compose ps
+                        docker compose ps
 
                         echo ""
                         echo "=== Service Logs (last 20 lines) ==="
-                        docker-compose logs --tail=20
+                        docker compose logs --tail=20
 
                         echo ""
                         echo "=== Deployed Services ==="
@@ -165,7 +165,7 @@ EOF
 
             script {
                 echo "Printing container logs for debugging..."
-                sh 'docker-compose logs --tail=50 || true'
+                sh 'docker compose logs --tail=50 || true'
             }
         }
 
