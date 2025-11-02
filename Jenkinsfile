@@ -13,6 +13,11 @@ pipeline {
             defaultValue: false,
             description: 'Remove volumes (clears database)'
         )
+        string(
+            name: 'API_HOST',
+            defaultValue: 'http://localhost:5000',
+            description: 'API host URL for frontend to connect to.'
+        )
     }
 
     stages {
@@ -59,6 +64,7 @@ API_PORT=5000
 DB_PORT=3306
 FRONTEND_PORT=3000
 NODE_ENV=production
+API_HOST=${params.API_HOST}
 EOF
                         """
                     }

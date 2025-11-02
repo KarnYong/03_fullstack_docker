@@ -1,6 +1,9 @@
 # ---------- Stage 1: Build the Next.js application ----------
 FROM node:20-alpine AS builder
 
+# Accept build argument for API_HOST
+ARG API_HOST=http://localhost:5000
+
 WORKDIR /app
 
 # Copy package files and install dependencies
@@ -9,7 +12,8 @@ RUN npm ci && npm cache clean --force
 
 # Copy source files and build
 COPY . .
-ENV NEXT_TELEMETRY_DISABLED=1
+ENV NEXT_TELEMETRY_DISABLED=1 \
+    API_HOST=${API_HOST}
 RUN npm run build
 
 

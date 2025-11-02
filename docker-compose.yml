@@ -46,7 +46,10 @@ services:
     networks: [stack]
 
   frontend:
-    build: ./02_frontend
+    build:
+      context: ./02_frontend
+      args:
+        - API_HOST=${API_HOST:-http://localhost:5000}
     restart: unless-stopped
     environment:
       - NODE_ENV=production
