@@ -3,7 +3,7 @@ pipeline {
 
     triggers {
         // Poll SCM as fallback if webhook fails
-        pollSCM('H/5 * * * *')
+        pollSCM('H/2 * * * *')
     }
 
     environment {
