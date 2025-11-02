@@ -1,0 +1,18 @@
+# Environment files
+.env
+.env.local
+.env*.local
+
+# Docker volumes
+mysql_data/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~

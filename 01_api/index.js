@@ -6,14 +6,7 @@ require('dotenv').config({ path: '.env.local' });
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
-// Enable CORS for production (frontend client-side requests)
-const corsOptions = {
-  origin: process.env.CORS_ORIGIN || '*',
-  credentials: true,
-  optionsSuccessStatus: 200
-};
-app.use(cors(corsOptions));
+app.use(cors());
 
 const pool = mysql.createPool({
   host: process.env.DB_HOST || 'localhost',
