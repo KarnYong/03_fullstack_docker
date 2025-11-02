@@ -50,7 +50,6 @@ services:
     restart: unless-stopped
     environment:
       - NODE_ENV=production
-      - API_HOST=${API_HOST}
     ports:
       - "${FRONTEND_PORT:-3000}:3000"
     depends_on: [api]
