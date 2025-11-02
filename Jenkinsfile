@@ -1,6 +1,11 @@
 pipeline {
     agent any
 
+    triggers {
+        // Poll SCM as fallback if webhook fails
+        pollSCM('H/5 * * * *')
+    }
+
     environment {
         // Build Information
         BUILD_TAG = "${env.BUILD_NUMBER}"
