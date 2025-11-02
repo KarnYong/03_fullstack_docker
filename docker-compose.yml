@@ -33,7 +33,7 @@ services:
     restart: unless-stopped
     environment:
       NODE_ENV: production
-      PORT: ${PORT}
+      PORT: ${API_PORT}
       DB_HOST: mysql
       DB_PORT: ${DB_PORT}
       DB_NAME: ${MYSQL_DATABASE}
@@ -41,7 +41,7 @@ services:
       DB_PASSWORD: ${MYSQL_PASSWORD}
       TZ: Asia/Bangkok
     ports:
-      - "${APP_PORT:-5000}:5000"
+      - "${API_PORT:-5000}:5000"
     depends_on: [mysql]
     networks: [stack]
 
