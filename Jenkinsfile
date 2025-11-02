@@ -57,8 +57,9 @@ MYSQL_DATABASE=tourist_db
 MYSQL_USER=tourist_user
 MYSQL_PASSWORD=\${MYSQL_PASSWORD_${DEPLOY_ENV.toUpperCase()}}
 MYSQL_PORT=3306
-PHPMYADMIN_PORT=8080
-APP_PORT=5000
+PHPMYADMIN_PORT=8888
+API_PORT=5000
+DB_PORT=3306
 FRONTEND_PORT=3000
 NODE_ENV=${DEPLOY_ENV}
 EOF
@@ -140,7 +141,7 @@ EOF
                         echo "=== Deployed Services ==="
                         echo "Frontend: http://localhost:3000"
                         echo "API: http://localhost:5000"
-                        echo "phpMyAdmin: http://localhost:8080"
+                        echo "phpMyAdmin: http://localhost:8888"
                     """
                 }
             }
@@ -157,7 +158,7 @@ EOF
             echo "Access your application:"
             echo "  - Frontend: http://localhost:3000"
             echo "  - API: http://localhost:5000"
-            echo "  - phpMyAdmin: http://localhost:8080"
+            echo "  - phpMyAdmin: http://localhost:8888"
         }
 
         failure {
