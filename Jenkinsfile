@@ -81,9 +81,6 @@ EOF
                 script {
                     echo "Deploying to production using Docker Compose..."
 
-                    // Require approval for production
-                    input message: 'Deploy to Production?', ok: 'Deploy'
-
                     // Stop existing containers
                     def downCommand = 'docker compose down'
                     if (params.CLEAN_VOLUMES) {
