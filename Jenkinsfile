@@ -5,17 +5,9 @@ pipeline {
         // Build Information
         BUILD_TAG = "${env.BUILD_NUMBER}"
         GIT_COMMIT_SHORT = sh(returnStdout: true, script: 'git rev-parse --short HEAD').trim()
-
-        // Environment Configuration
-        DEPLOY_ENV = "${params.ENVIRONMENT ?: 'dev'}"
     }
 
     parameters {
-        choice(
-            name: 'ENVIRONMENT',
-            choices: ['dev', 'staging', 'production'],
-            description: 'Select deployment environment'
-        )
         booleanParam(
             name: 'CLEAN_VOLUMES',
             defaultValue: false,
@@ -29,7 +21,7 @@ pipeline {
                 script {
                     echo "Checking out code..."
                     checkout scm
-                    echo "Deploying to environment: ${DEPLOY_ENV}"
+                    echo "Deploying to production environment"
                     echo "Build: ${BUILD_TAG}, Commit: ${GIT_COMMIT_SHORT}"
                 }
             }
@@ -49,24 +41,31 @@ pipeline {
                 script {
                     echo "Preparing environment configuration..."
 
-                    // Create environment-specific .env file
-                    sh """
-                        cat > .env <<EOF
-MYSQL_ROOT_PASSWORD=\${MYSQL_ROOT_PASSWORD_${DEPLOY_ENV.toUpperCase()}}
+                    // Load credentials from Jenkins
+                    withCredentials([
+                        string(credentialsId: 'MYSQL_ROOT_PASSWORD', variable: 'MYSQL_ROOT_PASS'),
+                        string(credentialsId: 'MYSQL_PASSWORD', variable: 'MYSQL_PASS')
+                    ]) {
+                        // Create .env file
+                        sh """
+                            cat > .env <<EOF
+MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASS}
 MYSQL_DATABASE=tourist_db
 MYSQL_USER=tourist_user
-MYSQL_PASSWORD=\${MYSQL_PASSWORD_${DEPLOY_ENV.toUpperCase()}}
+MYSQL_PASSWORD=${MYSQL_PASS}
 MYSQL_PORT=3306
 PHPMYADMIN_PORT=8888
 API_PORT=5000
 DB_PORT=3306
 FRONTEND_PORT=3000
-NODE_ENV=${DEPLOY_ENV}
+NODE_ENV=production
 EOF
-                    """
+                        """
+                    }
 
                     echo "Environment configuration created"
-                    sh 'cat .env'
+                    // Don't print .env to avoid exposing passwords in logs
+                    sh 'echo ".env file created successfully"'
                 }
             }
         }
@@ -74,12 +73,10 @@ EOF
         stage('Deploy') {
             steps {
                 script {
-                    echo "Deploying to ${DEPLOY_ENV} environment using Docker Compose..."
+                    echo "Deploying to production using Docker Compose..."
 
-                    // Add approval for production
-                    if (DEPLOY_ENV == 'production') {
-                        input message: 'Deploy to Production?', ok: 'Deploy'
-                    }
+                    // Require approval for production
+                    input message: 'Deploy to Production?', ok: 'Deploy'
 
                     // Stop existing containers
                     def downCommand = 'docker compose down'
@@ -151,7 +148,6 @@ EOF
     post {
         success {
             echo "✅ Deployment completed successfully!"
-            echo "Environment: ${DEPLOY_ENV}"
             echo "Build: ${BUILD_TAG}"
             echo "Commit: ${GIT_COMMIT_SHORT}"
             echo ""
